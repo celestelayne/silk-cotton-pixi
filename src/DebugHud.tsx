@@ -1,6 +1,9 @@
+import type { Point, WorldSize } from './world/types';
 import { INITIAL_PLAYER_POSITION, WORLD_SIZE } from './world/world';
 
-export function DebugHud() {
+type Props = { viewport: WorldSize; offset: Point };
+
+export function DebugHud({ viewport, offset }: Props) {
   return (
     <div
       style={{
@@ -17,6 +20,8 @@ export function DebugHud() {
     >
       <div>world: {WORLD_SIZE.width} × {WORLD_SIZE.height}</div>
       <div>player: ({INITIAL_PLAYER_POSITION.x}, {INITIAL_PLAYER_POSITION.y})</div>
+      <div>view: {viewport.width} × {viewport.height}</div>
+      <div>offset: ({offset.x}, {offset.y})</div>
     </div>
   );
 }
