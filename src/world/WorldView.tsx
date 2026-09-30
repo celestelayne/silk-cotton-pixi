@@ -1,9 +1,9 @@
 import { useRef } from 'react';
-import sample from '../assets/dithered-image-2026-09-30-monochrome-blue-noise.png';
 import { DebugHud } from '../DebugHud';
 import { usePanZoom } from './usePanZoom';
+import { ASSETS } from './assets';
 import { useViewportSize } from './useViewportSize';
-import type { View } from './types';
+import type { Point, View } from './types';
 import { INITIAL_PLAYER_POSITION, WORLD_SIZE, computeWorldOffset } from './world';
 
 const line = (alpha: number, px: number, dir: 'right' | 'bottom') =>
@@ -13,6 +13,14 @@ const line = (alpha: number, px: number, dir: 'right' | 'bottom') =>
 const GRID = {
   backgroundImage: [line(0.35, 2, 'right'), line(0.35, 2, 'bottom'), line(0.12, 1, 'right'), line(0.12, 1, 'bottom')].join(','),
   backgroundSize: '1000px 1000px, 1000px 1000px, 500px 500px, 500px 500px',
+};
+
+// Temporary hand placement until generation (milestone 03).
+const PLACEMENTS: Record<string, Point> = {
+  'dithered-figures': { x: 2000, y: 1200 },
+  'dithered-oxen-sugar-cane': { x: 1100, y: 1500 },
+  'dithered-woman-cocoa': { x: 2900, y: 900 },
+  'dithered-ship': { x: 2900, y: 1850 },
 };
 
 const initialView = (): View => {
@@ -44,18 +52,24 @@ export function WorldView() {
           ...GRID,
         }}
       >
-        <img
-          src={sample}
-          alt=""
-          draggable={false}
-          className="absolute"
-          style={{
-            left: INITIAL_PLAYER_POSITION.x,
-            top: INITIAL_PLAYER_POSITION.y,
-            width: 500,
-            transform: 'translate(-50%, -50%)',
-          }}
-        />
+        {ASSETS.map((asset) => {
+          const at = PLACEMENTS[asset.id];
+          return (
+            <img
+              key={asset.id}
+              src={asset.src}
+              alt=""
+              draggable={false}
+              className="absolute"
+              style={{
+                left: at.x,
+                top: at.y,
+                width: asset.width,
+                transform: 'translate(-50%, -50%)',
+              }}
+            />
+          );
+        })}
       </div>
     </div>
     <DebugHud viewport={viewport} view={view} />
