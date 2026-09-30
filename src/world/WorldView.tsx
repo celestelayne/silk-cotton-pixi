@@ -21,6 +21,7 @@ const PLACEMENTS: Record<string, Point> = {
   'dithered-oxen-sugar-cane': { x: 1100, y: 1500 },
   'dithered-woman-cocoa': { x: 2900, y: 900 },
   'dithered-ship': { x: 2900, y: 1850 },
+  'dithered-birdwing': { x: 1700, y: 800 },
 };
 
 const initialView = (): View => {

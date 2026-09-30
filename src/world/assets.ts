@@ -30,5 +30,11 @@ export const ASSETS: readonly Asset[] = [
         src: '/images/dithered-Fatel_Razack_Madras.png',
         tags: ['ship', 'sea', 'madras', 'dithered'],
         width: 800
+    },
+    {
+        id: 'dithered-birdwing',
+        src: '/images/dithered-common-green-birdwing.png',
+        tags: ['butterfly', 'insect', 'dithered'],
+        width: 300
     }
 ];
