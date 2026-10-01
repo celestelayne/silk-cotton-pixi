@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ASSETS, type Asset } from './assets';
-import { GENERATED_TAGS, generate } from './generate';
+import { SLOTS, generate } from './generate';
 import { EDGE_MARGIN, WORLD_SIZE } from './world';
 
 const bounds = (item: ReturnType<typeof generate>[number]) => {
@@ -21,25 +21,28 @@ describe('generate', () => {
     expect(results.size).toBeGreaterThan(1);
   });
 
-  it('places one item by default and honors count', () => {
-    expect(generate(1)).toHaveLength(1);
-    expect(generate(1, { count: 4 })).toHaveLength(4);
+  it('places one item per slot that has a matching asset, in slot order', () => {
+    const asset = (id: string, tag: string): Asset => ({ id, src: `/images/${id}.png`, tags: [tag], width: 100, aspect: 1 });
+    const assets = [asset('c', 'cloud'), asset('fl', 'flora'), asset('fa', 'fauna'), asset('p1', 'figure'), asset('p2', 'figure')];
+    const items = generate(1, { assets });
+    expect(items.map((i) => i.assetId.replace(/\d$/, ''))).toEqual(['c', 'fl', 'fa', 'p']);
   });
 
-  it('only uses catalog assets tagged cloud, flora or fauna (no figures)', () => {
+  it('skips slots that have no matching asset', () => {
+    const onlyFauna: Asset[] = [{ id: 'fa', src: '/images/fa.png', tags: ['fauna'], width: 100, aspect: 1 }];
+    expect(generate(1, { assets: onlyFauna }).map((i) => i.assetId)).toEqual(['fa']);
+  });
+
+  it('with the real catalog places a cloud, a fauna and a figure (no flora asset yet)', () => {
     for (let seed = 0; seed < 50; seed++) {
-      for (const item of generate(seed, { count: 5 })) {
-        const asset = ASSETS.find((a) => a.id === item.assetId);
-        expect(asset).toBeDefined();
-        expect(asset!.tags.some((t) => GENERATED_TAGS.includes(t))).toBe(true);
-        expect(asset!.tags).not.toContain('figure');
-      }
+      const tags = generate(seed).map((item) => SLOTS.find((slot) => ASSETS.find((a) => a.id === item.assetId)!.tags.includes(slot)));
+      expect(tags).toEqual(['cloud', 'fauna', 'figure']);
     }
   });
 
   it('never overhangs the world border by more than EDGE_MARGIN', () => {
     for (let seed = 0; seed < 300; seed++) {
-      for (const item of generate(seed, { count: 3 })) {
+      for (const item of generate(seed)) {
         const b = bounds(item);
         expect(b.left).toBeGreaterThanOrEqual(-EDGE_MARGIN);
         expect(b.top).toBeGreaterThanOrEqual(-EDGE_MARGIN);
@@ -49,8 +52,8 @@ describe('generate', () => {
     }
   });
 
-  it('returns nothing when no asset is eligible', () => {
-    const figureOnly: Asset[] = [{ id: 'f', src: '/images/f.png', tags: ['figure'], width: 100, aspect: 1 }];
-    expect(generate(1, { assets: figureOnly })).toEqual([]);
+  it('returns nothing when no asset matches a slot', () => {
+    const unrelated: Asset[] = [{ id: 'x', src: '/images/x.png', tags: ['ship'], width: 100, aspect: 1 }];
+    expect(generate(1, { assets: unrelated })).toEqual([]);
   });
 });

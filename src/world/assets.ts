@@ -43,6 +43,13 @@ export const ASSETS: readonly Asset[] = [
         tags: ['butterfly', 'insect', 'fauna', 'dithered'],
         width: 300,
         aspect: 1086 / 1448
+    },
+    {
+        id: 'dithered-cloud-01',
+        src: '/images/dithered-image-cloud-01.png',
+        tags: ['cloud', 'sky', 'dithered'],
+        width: 900,
+        aspect: 1024 / 1536
     }
 ];
 

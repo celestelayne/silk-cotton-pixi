@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chance, createRng, pick, randInt, resolveSeed } from './random';
+import { DEFAULT_SEED, chance, createRng, pick, randInt, resolveSeed } from './random';
 
 const sample = (seed: number, n = 5) => {
   const rng = createRng(seed);
@@ -71,11 +71,9 @@ describe('resolveSeed', () => {
     expect(resolveSeed('?seed=silk-cotton')).not.toBe(resolveSeed('?seed=another'));
   });
 
-  it('falls back to a random integer seed when absent or empty', () => {
+  it('falls back to DEFAULT_SEED when absent or empty', () => {
     for (const search of ['', '?other=1', '?seed=']) {
-      const seed = resolveSeed(search);
-      expect(Number.isInteger(seed)).toBe(true);
-      expect(seed).toBeGreaterThanOrEqual(0);
+      expect(resolveSeed(search)).toBe(DEFAULT_SEED);
     }
   });
 });

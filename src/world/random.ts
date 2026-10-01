@@ -30,9 +30,11 @@ const hashString = (text: string): number => {
   return h >>> 0;
 };
 
-// `?seed=` override when present (numbers are used as-is, other text is hashed); otherwise random.
+export const DEFAULT_SEED = 1;
+
+// `?seed=` override when present (numbers are used as-is, other text is hashed); otherwise DEFAULT_SEED.
 export const resolveSeed = (search: string): number => {
   const raw = new URLSearchParams(search).get('seed');
-  if (raw === null || raw === '') return Math.floor(Math.random() * 4294967296);
+  if (raw === null || raw === '') return DEFAULT_SEED;
   return /^\d+$/.test(raw) ? Number(raw) >>> 0 : hashString(raw);
 };
