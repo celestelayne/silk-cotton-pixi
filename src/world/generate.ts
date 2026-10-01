@@ -1,7 +1,7 @@
 import { ASSETS, type Asset } from './assets';
 import { createRng, pick, randInt } from './random';
 import type { PlacedItem } from './types';
-import { EDGE_MARGIN, WORLD_SIZE } from './world';
+import { WORLD_SIZE, centerRange } from './world';
 
 // One item is placed per slot, in this order (later slots draw on top). A slot with no
 // matching asset in the catalog is skipped.
@@ -10,12 +10,6 @@ export const SLOTS: readonly string[] = ['cloud', 'flora', 'fauna', 'figure'];
 type Options = {
   assets?: readonly Asset[];
 };
-
-// Center range that keeps the item no more than EDGE_MARGIN past the border.
-const centerRange = (worldLength: number, itemLength: number): [number, number] => [
-  Math.ceil(itemLength / 2 - EDGE_MARGIN),
-  Math.floor(worldLength - itemLength / 2 + EDGE_MARGIN),
-];
 
 export function generate(seed: number, { assets = ASSETS }: Options = {}): PlacedItem[] {
   const rng = createRng(seed);
@@ -29,6 +23,7 @@ export function generate(seed: number, { assets = ASSETS }: Options = {}): Place
     return [
       {
         assetId: asset.id,
+        slot,
         x: randInt(rng, minX, maxX),
         y: randInt(rng, minY, maxY),
         width: asset.width,

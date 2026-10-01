@@ -19,6 +19,8 @@ export type View = {
 
 export type PlacedItem = {
     assetId: string;
+    // The generation slot this item filled (cloud, flora, fauna, figure).
+    slot: string;
     // Center of the item, in world coordinates.
     x: number;
     y: number;

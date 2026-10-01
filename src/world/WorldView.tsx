@@ -1,5 +1,7 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { DebugHud } from '../DebugHud';
+import { useCursor } from './useCursor';
+import { useCursorMotion } from './useCursorMotion';
 import { usePanZoom } from './usePanZoom';
 import { assetById } from './assets';
 import { constrainView } from './coordinates';
@@ -31,6 +33,14 @@ export function WorldView() {
   const seed = useMemo(() => resolveSeed(window.location.search), []);
   const items = useMemo(() => generate(seed), [seed]);
 
+  const viewRef = useRef(view);
+  useEffect(() => {
+    viewRef.current = view;
+  }, [view]);
+  const cursorRef = useCursor(viewportRef);
+  const elementRefs = useRef<(HTMLElement | null)[]>([]);
+  useCursorMotion({ items, elements: elementRefs, view: viewRef, cursor: cursorRef, viewport: viewportRef });
+
   return (
     <>
     <div
@@ -53,6 +63,9 @@ export function WorldView() {
           return (
             <img
               key={i}
+              ref={(node) => {
+                elementRefs.current[i] = node;
+              }}
               src={asset.src}
               alt=""
               draggable={false}

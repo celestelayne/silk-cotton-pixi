@@ -17,3 +17,19 @@ export const computeWorldOffset = (viewport: WorldSize, focus: Point): Point => 
     x: viewport.width / 2 - focus.x,
     y: viewport.height / 2 - focus.y
 });
+
+
+// Range for an item's center along one axis, so it overhangs the border by at most EDGE_MARGIN.
+export const centerRange = (worldLength: number, itemLength: number): [number, number] => [
+    Math.ceil(itemLength / 2 - EDGE_MARGIN),
+    Math.floor(worldLength - itemLength / 2 + EDGE_MARGIN)
+];
+
+export const clampCenter = (center: Point, size: WorldSize): Point => {
+    const [minX, maxX] = centerRange(WORLD_SIZE.width, size.width);
+    const [minY, maxY] = centerRange(WORLD_SIZE.height, size.height);
+    return {
+        x: Math.min(maxX, Math.max(minX, center.x)),
+        y: Math.min(maxY, Math.max(minY, center.y))
+    };
+};

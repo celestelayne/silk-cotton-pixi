@@ -26,6 +26,7 @@ describe('generate', () => {
     const assets = [asset('c', 'cloud'), asset('fl', 'flora'), asset('fa', 'fauna'), asset('p1', 'figure'), asset('p2', 'figure')];
     const items = generate(1, { assets });
     expect(items.map((i) => i.assetId.replace(/\d$/, ''))).toEqual(['c', 'fl', 'fa', 'p']);
+    expect(items.map((i) => i.slot)).toEqual(['cloud', 'flora', 'fauna', 'figure']);
   });
 
   it('skips slots that have no matching asset', () => {
