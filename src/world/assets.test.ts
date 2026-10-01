@@ -20,6 +20,7 @@ describe('ASSETS', () => {
   it.each(ASSETS.map((a) => [a.id, a] as const))('%s is well-formed', (_id, asset) => {
     expect(asset.src).toMatch(IMAGE_SRC);
     expect(asset.width).toBeGreaterThan(0);
+    expect(asset.aspect).toBeGreaterThan(0);
     expect(asset.tags.length).toBeGreaterThan(0);
     for (const tag of asset.tags) expect(tag).toMatch(TAG);
   });

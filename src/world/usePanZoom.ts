@@ -1,6 +1,7 @@
 import { useEffect, useState, type RefObject } from 'react';
-import { panBy, zoomAt } from './coordinates';
+import { constrainView, fitZoom, panBy, zoomAt } from './coordinates';
 import type { Point, View } from './types';
+import { EDGE_MARGIN, WORLD_SIZE } from './world';
 
 const WHEEL_SPEED = 0.002;
 const PINCH_WHEEL_SPEED = 0.01; // ctrl+wheel is how trackpads report pinch
@@ -17,11 +18,18 @@ export function usePanZoom(ref: RefObject<HTMLElement | null>, initial: () => Vi
 
     const pointers = new Map<number, Point>();
 
+    // Apply `update`, then keep the result inside the world (plus margin).
+    const apply = (update: (v: View, minZoom: number) => View) => {
+      const size = { width: el.clientWidth, height: el.clientHeight };
+      const minZoom = fitZoom(size, WORLD_SIZE, EDGE_MARGIN);
+      setView((v) => constrainView(update(v, minZoom), size, WORLD_SIZE, EDGE_MARGIN));
+    };
+
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const speed = e.ctrlKey ? PINCH_WHEEL_SPEED : WHEEL_SPEED;
       const anchor = { x: e.clientX, y: e.clientY };
-      setView((v) => zoomAt(v, anchor, Math.exp(-e.deltaY * speed)));
+      apply((v, minZoom) => zoomAt(v, anchor, Math.exp(-e.deltaY * speed), minZoom));
     };
 
     const onDown = (e: PointerEvent) => {
@@ -36,7 +44,7 @@ export function usePanZoom(ref: RefObject<HTMLElement | null>, initial: () => Vi
       pointers.set(e.pointerId, next);
 
       if (pointers.size === 1) {
-        setView((v) => panBy(v, next.x - prev.x, next.y - prev.y));
+        apply((v) => panBy(v, next.x - prev.x, next.y - prev.y));
         return;
       }
 
@@ -46,7 +54,7 @@ export function usePanZoom(ref: RefObject<HTMLElement | null>, initial: () => Vi
         const before = midpoint(prev, other);
         const after = midpoint(next, other);
         const factor = distance(next, other) / Math.max(distance(prev, other), 1);
-        setView((v) => panBy(zoomAt(v, before, factor), after.x - before.x, after.y - before.y));
+        apply((v, minZoom) => panBy(zoomAt(v, before, factor, minZoom), after.x - before.x, after.y - before.y));
       }
     };
 
@@ -54,17 +62,21 @@ export function usePanZoom(ref: RefObject<HTMLElement | null>, initial: () => Vi
       pointers.delete(e.pointerId);
     };
 
+    const onResize = () => apply((v) => v);
+
     el.addEventListener('wheel', onWheel, { passive: false });
     el.addEventListener('pointerdown', onDown);
     el.addEventListener('pointermove', onMove);
     el.addEventListener('pointerup', onUp);
     el.addEventListener('pointercancel', onUp);
+    window.addEventListener('resize', onResize);
     return () => {
       el.removeEventListener('wheel', onWheel);
       el.removeEventListener('pointerdown', onDown);
       el.removeEventListener('pointermove', onMove);
       el.removeEventListener('pointerup', onUp);
       el.removeEventListener('pointercancel', onUp);
+      window.removeEventListener('resize', onResize);
     };
   }, [ref]);
 

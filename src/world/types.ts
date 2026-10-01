@@ -15,3 +15,13 @@ export type View = {
     y: number;
     zoom: number
 };
+
+
+export type PlacedItem = {
+    assetId: string;
+    // Center of the item, in world coordinates.
+    x: number;
+    y: number;
+    // Display width in world px.
+    width: number
+};

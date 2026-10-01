@@ -10,6 +10,8 @@ export const INITIAL_PLAYER_POSITION: Point = {
     y: 1200 
 };
 
+// How far an item, or the viewport, may extend past the world border (world px).
+export const EDGE_MARGIN = 60;
 
 export const computeWorldOffset = (viewport: WorldSize, focus: Point): Point => ({
     x: viewport.width / 2 - focus.x,

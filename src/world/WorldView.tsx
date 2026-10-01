@@ -1,10 +1,13 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { DebugHud } from '../DebugHud';
 import { usePanZoom } from './usePanZoom';
-import { ASSETS } from './assets';
+import { assetById } from './assets';
+import { constrainView } from './coordinates';
+import { generate } from './generate';
+import { resolveSeed } from './random';
 import { useViewportSize } from './useViewportSize';
-import type { Point, View } from './types';
-import { INITIAL_PLAYER_POSITION, WORLD_SIZE, computeWorldOffset } from './world';
+import type { View } from './types';
+import { EDGE_MARGIN, INITIAL_PLAYER_POSITION, WORLD_SIZE, computeWorldOffset } from './world';
 
 const line = (alpha: number, px: number, dir: 'right' | 'bottom') =>
   `linear-gradient(to ${dir}, rgba(255,255,255,${alpha}) ${px}px, transparent ${px}px)`;
@@ -15,27 +18,18 @@ const GRID = {
   backgroundSize: '1000px 1000px, 1000px 1000px, 500px 500px, 500px 500px',
 };
 
-// Temporary hand placement until generation (milestone 03).
-const PLACEMENTS: Record<string, Point> = {
-  'dithered-figures': { x: 2000, y: 1200 },
-  'dithered-oxen-sugar-cane': { x: 1100, y: 1500 },
-  'dithered-woman-cocoa': { x: 2900, y: 900 },
-  'dithered-ship': { x: 2900, y: 1850 },
-  'dithered-birdwing': { x: 1700, y: 800 },
-};
-
 const initialView = (): View => {
-  const { x, y } = computeWorldOffset(
-    { width: window.innerWidth, height: window.innerHeight },
-    INITIAL_PLAYER_POSITION,
-  );
-  return { x, y, zoom: 1 };
+  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const { x, y } = computeWorldOffset(viewport, INITIAL_PLAYER_POSITION);
+  return constrainView({ x, y, zoom: 1 }, viewport, WORLD_SIZE, EDGE_MARGIN);
 };
 
 export function WorldView() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const view = usePanZoom(viewportRef, initialView);
   const viewport = useViewportSize();
+  const seed = useMemo(() => resolveSeed(window.location.search), []);
+  const items = useMemo(() => generate(seed), [seed]);
 
   return (
     <>
@@ -53,19 +47,20 @@ export function WorldView() {
           ...GRID,
         }}
       >
-        {ASSETS.map((asset) => {
-          const at = PLACEMENTS[asset.id];
+        {items.map((item, i) => {
+          const asset = assetById(item.assetId);
+          if (!asset) return null;
           return (
             <img
-              key={asset.id}
+              key={i}
               src={asset.src}
               alt=""
               draggable={false}
               className="absolute"
               style={{
-                left: at.x,
-                top: at.y,
-                width: asset.width,
+                left: item.x,
+                top: item.y,
+                width: item.width,
                 transform: 'translate(-50%, -50%)',
               }}
             />
@@ -73,7 +68,7 @@ export function WorldView() {
         })}
       </div>
     </div>
-    <DebugHud viewport={viewport} view={view} />
+    <DebugHud viewport={viewport} view={view} seed={seed} />
     </>
   );
 }
